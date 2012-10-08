@@ -112,10 +112,10 @@ class Device(object):
 	    self.send_packages()
 	    self.tx_timer = 0
      
-    def inc_tx_timer(self):
+    def set_tx_timer(self):
 	self.tx_timer += 1
 
-    def inc_rx_timer(self):	
+    def set_rx_timer(self):	
         self.rx_timer += 1
 
 import sys
