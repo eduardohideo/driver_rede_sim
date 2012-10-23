@@ -1,18 +1,39 @@
 #-*- coding:utf-8 -*-
 
-class Buffer(list):
+class cpu(object):
+    _cpu_id = 0
+    
+    def __init__(self,device,power):
+        self.device = device
+        self.power = power
+    
+    @classmethod
+    def cpu_id(cls):
+        cls._cpu_id+=1
+        return cls._cpu_id
+
+
+class channel:
+    def __init__(self,cpu_name_1,cpu_name_2,lat,band):
+        self.cpu_name_1 = cpu_name_1
+        self.cpu_name_2 = cpu_name_2
+        self.latency = lat
+        self.bandwidth = band
+
+
+class buffer(list):
     '''
 	classe do buffer
 
-    >>> buffer = Buffer(2)
-    >>> buffer.clean_stack()
-    >>> buffer.append(10)
-    >>> buffer.append(10)
+    >>> buffer1 = buffer(2)
+    >>> buffer1.clean_stack()
+    >>> buffer1.append(10)
+    >>> buffer1.append(10)
 
     '''
     def __init__(self,max_size):
 	self.max_size = max_size
-	super(Buffer,self).__init__()
+	super(buffer,self).__init__()
 
     def clean_stack(self):
 	self.__init__(self.max_size)
@@ -20,19 +41,19 @@ class Buffer(list):
     def append(self,value):
 	if len(self) >= self.max_size:
 		raise Exception("frame  > max_size")
-	super(Buffer,self).append(value)
+	super(buffer,self).append(value)
 
-class Device(object):
+class device(object):
     '''
 	classe do dispositivo de rede
 	
-    >>> device1 = Device(rx_frame = 1,rx_size = 3)
+    >>> device1 = device(rx_frame = 1,rx_size = 3)
     >>> device1.receive()
     receiving 1 package(s)
     >>> device1.transmit()
     sending 1 package(s)
     
-    >>> device2 = Device(rx_frame = 3,rx_size = 3)
+    >>> device2 = device(rx_frame = 3,rx_size = 3)
     >>> device2.receive()
     >>> device2.receive()
     >>> device2.receive()
@@ -49,8 +70,8 @@ class Device(object):
 	    tx_usecs   gera uma interrupção N microssegundos depois que um pacote for enviado
 	    rx_usecs   gera uma interrupção N microssegundos depois que um pacote for recebido
 	'''
-	self.tx_buffer = Buffer(tx_size)
-	self.rx_buffer = Buffer(rx_size)
+	self.tx_buffer = buffer(tx_size)
+	self.rx_buffer = buffer(rx_size)
 	self.tx_frame = tx_frame
 	self.rx_frame = rx_frame
 	self.tx_usecs = tx_usecs
