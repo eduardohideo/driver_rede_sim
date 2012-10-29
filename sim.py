@@ -33,12 +33,12 @@ class event(object):
         return cls._id_counter
 
 
-class schedule(object):
+class schedule_event(object):
     """classe de escalonador de eventos
         
-        >>> s = schedule() 
+        >>> s = schedule_event() 
         >>> evt = event("hello world",10,12)
-        >>> s.schedule_event(evt)
+        >>> s.put_event(evt)
         >>> s.run()
         [10] iniciado o evento hello world
         [12] terminado o evento hello world
@@ -64,7 +64,7 @@ class schedule(object):
     
     """Escalona um evento
     """
-    def schedule_event(self,event):
+    def put_event(self,event):
         self.events[event.id_number] = event
    
     @property
