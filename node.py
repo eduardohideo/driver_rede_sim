@@ -1,11 +1,18 @@
-class node(object):
-   "classe de nós
-    "
-    def __init__(list_task = []):
-    self.schedule = schedule()
+#-*- coding:utf-8 -*-
+from sim import event
 
-    def run_task(task):
-        pass
+class node(object):
+    "classe de nós"
+    def __init__(self,list_task = [],topology = [],time=-1,hostname = "unknown"):
+        self.schedule = task_schedule(topology,time,hostname)
+        self.list_task = list_task
+
+    def put_task(self,task):
+        self.schedule.put_task(task)
+
+    def run(self):
+        tasks_to_process = self.schedule.run()
+
 
 class task(object):
     """classe de tarefas de um nó
@@ -13,7 +20,7 @@ class task(object):
         >>> e = task("hello world",10,12)
         >>> print e.name
         hello world
-        >>> print e.time_init
+        >>> print e.size
         10
     """
     _id_counter = 0
@@ -25,8 +32,8 @@ class task(object):
         self.id_number = task.id_counter()
         self.creator_name = creator_name
      
-    def exec(self,time,power):
-        print "[%i] executando a tarefa %s por %d" % (time,self.name,time_exec/power)
+    def execute(self,time,power):
+        print "[%i] executando a tarefa %s por %d" % (time,self.name,self.time_exec/power)
         return time_exec/power
 
     def receive(self,time):
@@ -41,52 +48,64 @@ class task_schedule(object):
     """classe de escalonador de tarefas
         
         >>> s = task_schedule() 
-        >>> task = task("hello world",10,12)
-        >>> s.put_task(evt)
+        >>> tsk = task("hello world",10,12)
+        >>> s.put_task(tsk)
         >>> s.run()
-        fim da simulação
+        [0] recebendo a tarefa hello world
+        >>> tsk = task("hello world",10,12)
+        >>> s.put_task(tsk)
+        >>> s.run()
+        [1] recebendo a tarefa hello world
+
     """
-    def __init__(self,topology = [],time = 0, host_name = ""):
-        self.tasks = {}
+    def __init__(self,topology = [],time = -1, host_name = ""):
+        self.received_tasks = {}
         self._time = time
         self.topology = topology
-        self.processing_tasks = {}
         self.host_name = host_name
     
     """
-        processa as tarefas que chegaram no tempo atual e retorna 
+        recebe as tarefas e retorna a lista de tarefas que o host deve processar 
     """ 
     def hold_task(self):
-        list_canceled_tasks = []
-        if self.tasks != {}:
-            for tasks in self.tasks.values: 
-                task.begin(self._time)
-            if task.time_end == self.time:
-                task.end(self._time)
-                list_canceled_tasks.append(task)
-        for canceled_task in list_canceled_tasks:
-            self.cancel_task(canceled_task)
+        queue_tasks = {}
+        if self.received_tasks != {}:
+            for t in self.received_tasks.values(): 
+                t.receive(self._time)
+                queue_tasks[t.id_number] = t
+            task_schedule.clean_queue(self.received_tasks)
+        return queue_tasks
+
+    @staticmethod
+    def clean_queue(queue):
+        for key in queue.keys():
+            del queue[key]
     
-    def cancel_task(self,task):
-       del self.tasks[task.id_number]
+    @staticmethod
+    def del_task(task,queue):
+       del queue[task.id_number]
     
+    """coloca uma tarefa em uma fila""" 
+    @staticmethod
+    def put_task_in(task,queue):
+        queue[task.id_number] = task
+  
+
     """Escalona uma tarefa
     """
     def put_task(self,task):
-        self.tasks[task.id_number] = task
-   
+        self.received_tasks[task.id_number] = task
+    
     @property
     def time(self):
         return self._time
 
     def update(self):
         self._time +=1
-        self.hold_task()
+        return self.hold_task()
 
     def run(self):
-        while self.tasks != {}:
-            self.update()
-        print "fim da simulação"
+        return self.update()
 
 import sys
 def main(argv = None):
