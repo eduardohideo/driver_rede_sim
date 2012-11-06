@@ -1,26 +1,5 @@
 #-*- coding:utf-8 -*-
 
-class cpu(object):
-    _cpu_id = 0
-    
-    def __init__(self,device,power):
-        self.device = device
-        self.power = power
-    
-    @classmethod
-    def cpu_id(cls):
-        cls._cpu_id+=1
-        return cls._cpu_id
-
-
-class channel:
-    def __init__(self,cpu_name_1,cpu_name_2,lat,band):
-        self.cpu_name_1 = cpu_name_1
-        self.cpu_name_2 = cpu_name_2
-        self.latency = lat
-        self.bandwidth = band
-
-
 class buffer(list):
     '''
 	classe do buffer

@@ -1,17 +1,93 @@
 #-*- coding:utf-8 -*-
 from sim import event
+from network.sim_network import device 
 
 class node(object):
-    "classe de nós"
-    def __init__(self,list_task = [],topology = [],time=-1,hostname = "unknown"):
+    """classe de nós
+    >>> d = device()
+    >>> c_l = [cpu(10)]
+    >>> top = []
+    >>> n = node(d,c_l,"node1",top,-1)
+    >>> n.queue_task(task("t1",100,100))
+    >>> for i in range(11):
+    ...     n.run() 
+    [0] recebendo a tarefa t1
+    [0] processando a tarefa t1
+    [10] fim do processo da tarefa t1
+    """
+    def __init__(self,device = None, core_list=[],hostname = "unknown",topology=[],time=-1):
         self.schedule = task_schedule(topology,time,hostname)
-        self.list_task = list_task
+        self.device = device
+        self.core_list = core_list
+        self.list_task = []
+        self.time = time
+        self.tasks_to_process = []
 
-    def put_task(self,task):
+    def queue_task(self,task):
         self.schedule.put_task(task)
 
+    def sendto(hostname,task):
+        self.device.transmit()
+
+    def receive(task):
+        self.device.receive()
+    
     def run(self):
-        tasks_to_process = self.schedule.run()
+        self.time +=1
+        self.tasks_to_process += self.schedule.run().values()
+        for core in self.core_list:
+            core.check_cpu(self.time)
+        if self.tasks_to_process != []:
+            for core in self.core_list:
+                if core.idle == True:
+                    core.process_task(self.tasks_to_process.pop(), self.time)
+ 
+
+class channel:
+    def __init__(self,cpu_name_1,cpu_name_2,lat,band):
+        self.cpu_name_1 = cpu_name_1
+        self.cpu_name_2 = cpu_name_2
+        self.latency = lat
+        self.bandwidth = band
+
+class cpu(object):
+    """ classe de cpu
+        >>> core = cpu(1000)
+        >>> t = task("task10",10,10)
+        >>> core.process_task(t)
+        [0] processando a tarefa task10
+        >>> for i in range(100):
+        ...     core.check_cpu()
+        [0] fim do processo da tarefa task10
+    """
+    _cpu_id = 0
+
+    def __init__(self,power):
+        self.power = power
+        self.idle = True
+        self.task = None
+        self.task_time_left = 0
+   
+    @classmethod
+    def cpu_id(cls):
+        cls._cpu_id+=1
+        return cls._cpu_id
+    
+    """processa uma tarefa"""
+    def process_task(self,task,time =0):
+        self.task_time_left = task.time_exec/self.power
+        print "[%i] processando a tarefa %s" % (time,task.name)
+        self.idle = False
+        self.task = task
+
+    """verifica a cpu, se não estiver ocupada reduz o tempo restante de processo"""
+    def check_cpu(self,time= 0):
+        if self.idle == False:
+            self.task_time_left += -1
+            if self.task_time_left <= 0:
+                self.idle = True
+                print "[%i] fim do processo da tarefa %s" % (time, self.task.name)
+                self.process_task = None
 
 
 class task(object):
@@ -44,17 +120,18 @@ class task(object):
         cls._id_counter +=1
         return cls._id_counter
 
+
 class task_schedule(object):
     """classe de escalonador de tarefas
         
         >>> s = task_schedule() 
         >>> tsk = task("hello world",10,12)
         >>> s.put_task(tsk)
-        >>> s.run()
+        >>> t1 = s.run()
         [0] recebendo a tarefa hello world
         >>> tsk = task("hello world",10,12)
         >>> s.put_task(tsk)
-        >>> s.run()
+        >>> t2 = s.run()
         [1] recebendo a tarefa hello world
 
     """
