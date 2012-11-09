@@ -26,10 +26,10 @@ class node(object):
     def queue_task(self,task):
         self.schedule.put_task(task)
 
-    def sendto(hostname,task):
+    def sendto(self,hostname,package):
         self.device.transmit()
 
-    def receive(task):
+    def receive(self,package):
         self.device.receive()
     
     def run(self):
@@ -44,11 +44,17 @@ class node(object):
  
 
 class channel:
-    def __init__(self,cpu_name_1,cpu_name_2,lat,band):
+    def __init__(self,cpu_name_1,cpu_name_2,lat,band,time=-1):
         self.cpu_name_1 = cpu_name_1
         self.cpu_name_2 = cpu_name_2
         self.latency = lat
         self.bandwidth = band
+        self.packages = []
+        self.time = time
+
+    def queue_package(self,package):
+        self.packages.append(package)
+
 
 class cpu(object):
     """ classe de cpu

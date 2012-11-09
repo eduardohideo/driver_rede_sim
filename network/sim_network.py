@@ -22,11 +22,18 @@ class buffer(list):
 		raise Exception("frame  > max_size")
 	super(buffer,self).append(value)
 
+class package(object):
+    def __init__(self,size=0,sender,receiver):
+        self.size = 0
+        self.sender = sender
+        self.receiver = receiver
+
 class device(object):
     '''
 	classe do dispositivo de rede
 	
     >>> device1 = device(rx_frame = 1,rx_size = 3)
+    >>> p1 = package(10,"h1","h2")
     >>> device1.receive()
     receiving 1 package(s)
     >>> device1.transmit()
@@ -78,7 +85,7 @@ class device(object):
 	print "receiving %d package(s)" % len(self.rx_buffer)
 	self.rx_buffer.clean_stack()
     
-    def transmit(self):
+    def transmit(self,node_name):
 	'''
 	    adiciona um pacote no buffer de recepçao
 	'''
